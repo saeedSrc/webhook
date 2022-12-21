@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -33,10 +34,12 @@ func (a *App) initialLogger() *zap.SugaredLogger {
 }
 
 func (a *App) registerRoutes() {
+	a.Logger.Info("Listening on port ", a.Config.WebHook.Port, "...")
 	c := controller.NewController(a.Config, a.Logger)
-	http.HandleFunc("/api/v1/update", c.Update)
-	a.Logger.Info("Listening on port", a.Config.WebHook.Port, ".")
-	if err := http.ListenAndServe(":"+a.Config.WebHook.Port, nil); err != nil {
+	router := httprouter.New()
+	router.POST("/api/v1/update", c.Update)
+	err := http.ListenAndServe(":"+a.Config.WebHook.Port, router)
+	if err != nil {
 		panic(err)
 	}
 }

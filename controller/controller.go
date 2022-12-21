@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 	"net/http"
 	"webhook/config"
@@ -10,7 +11,7 @@ import (
 )
 
 type Controller interface {
-	Update(w http.ResponseWriter, r *http.Request)
+	Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 }
 
 type controller struct {
@@ -26,10 +27,8 @@ func NewController(config *config.Config, l *zap.SugaredLogger) Controller {
 	return c
 }
 
-func (c *controller) Update(w http.ResponseWriter, r *http.Request) {
-
+func (c *controller) Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	message := &models.ReceiveMessage{}
-
 	err := json.NewDecoder(r.Body).Decode(&message)
 	if err != nil {
 		c.logger.Errorf("can not decode request body, err is: %v", err)
